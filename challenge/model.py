@@ -2,6 +2,17 @@ import pandas as pd
 
 from typing import Tuple, Union, List
 
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+import datetime
+import preprocess
+from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
+from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.linear_model import LogisticRegression
+
 class DelayModel:
 
     def __init__(
@@ -26,7 +37,25 @@ class DelayModel:
             or
             pd.DataFrame: features.
         """
-        return
+        
+        data['period_day'] = data['Fecha-I'].apply(preprocess.get_period_day)
+        data['high_season'] = data['Fecha-I'].apply(preprocess.is_high_season)
+        data['min_diff'] = data.apply(preprocess.get_min_diff, axis = 1)
+        threshold_in_minutes = 15
+        data['delay'] = np.where(data['min_diff'] > threshold_in_minutes, 1, 0)
+        features = pd.concat([
+            pd.get_dummies(data['OPERA'], prefix = 'OPERA'),
+            pd.get_dummies(data['TIPOVUELO'], prefix = 'TIPOVUELO'), 
+            pd.get_dummies(data['MES'], prefix = 'MES')], 
+            axis = 1
+        )
+        if target_column:
+            target = data[target_column]
+            #target = data['delay']
+            return features, target
+        else:
+            return features
+    
 
     def fit(
         self,
@@ -40,6 +69,10 @@ class DelayModel:
             features (pd.DataFrame): preprocessed data.
             target (pd.DataFrame): target.
         """
+
+        reg_model = LogisticRegression()
+        reg_model.fit(features, target)
+        self._model = reg_model
         return
 
     def predict(
@@ -55,4 +88,6 @@ class DelayModel:
         Returns:
             (List[int]): predicted targets.
         """
-        return
+
+        y_hat = self._model.predict(features)
+        return y_hat
