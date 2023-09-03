@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
 import datetime
-import preprocess
+from .preprocess import get_period_day, is_high_season, get_min_diff
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from sklearn.metrics import confusion_matrix, classification_report
@@ -24,7 +24,7 @@ class DelayModel:
         self,
         data: pd.DataFrame,
         target_column: str = None
-    ) -> Union(Tuple[pd.DataFrame, pd.DataFrame], pd.DataFrame):
+    ) -> Union[Tuple[pd.DataFrame, pd.DataFrame], pd.DataFrame]:
         """
         Prepare raw data for training or predict.
 
@@ -38,9 +38,9 @@ class DelayModel:
             pd.DataFrame: features.
         """
         
-        data['period_day'] = data['Fecha-I'].apply(preprocess.get_period_day)
-        data['high_season'] = data['Fecha-I'].apply(preprocess.is_high_season)
-        data['min_diff'] = data.apply(preprocess.get_min_diff, axis = 1)
+        data['period_day'] = data['Fecha-I'].apply(get_period_day)
+        data['high_season'] = data['Fecha-I'].apply(is_high_season)
+        data['min_diff'] = data.apply(get_min_diff, axis = 1)
         threshold_in_minutes = 15
         data['delay'] = np.where(data['min_diff'] > threshold_in_minutes, 1, 0)
         features = pd.concat([
