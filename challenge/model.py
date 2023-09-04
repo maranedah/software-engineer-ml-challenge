@@ -3,14 +3,9 @@ import pandas as pd
 from typing import Tuple, Union, List
 
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import warnings
-import datetime
-from .preprocess import get_period_day, is_high_season, get_min_diff
-from sklearn.model_selection import train_test_split
-from sklearn.utils import shuffle
-from sklearn.metrics import confusion_matrix, classification_report
+import xgboost as xgb
+import joblib
+from .preprocess import get_period_day, is_high_season, get_min_diff, get_top_10_features
 from sklearn.linear_model import LogisticRegression
 
 class DelayModel:
@@ -19,6 +14,7 @@ class DelayModel:
         self
     ):
         self._model = None # Model should be saved in this attribute.
+        self._schema = None
 
     def preprocess(
         self,
@@ -49,12 +45,16 @@ class DelayModel:
             pd.get_dummies(data['MES'], prefix = 'MES')], 
             axis = 1
         )
+        features.to_csv("full_features.csv")
+        self._schema = features.columns.tolist()
+        features = get_top_10_features(features)
+        features.to_csv("features.csv")
         if target_column:
-            target = data[target_column]
-            #target = data['delay']
+            target = data[target_column].to_frame()
             return features, target
         else:
             return features
+        
     
 
     def fit(
@@ -69,11 +69,14 @@ class DelayModel:
             features (pd.DataFrame): preprocessed data.
             target (pd.DataFrame): target.
         """
-
-        reg_model = LogisticRegression()
-        reg_model.fit(features, target)
-        self._model = reg_model
-        return
+        n_y0 = len(target[target == 0])
+        n_y1 = len(target[target == 1])
+        scale = n_y0/n_y1
+        model= xgb.XGBClassifier(random_state=1, learning_rate=0.01, scale_pos_weight = scale)
+        #model = LogisticRegression(class_weight={1: n_y0/len(target), 0: n_y1/len(target)})
+        model.fit(features, target)
+        self._model = model
+        joblib.dump(self, 'model.joblib')
 
     def predict(
         self,
@@ -88,6 +91,7 @@ class DelayModel:
         Returns:
             (List[int]): predicted targets.
         """
-
-        y_hat = self._model.predict(features)
+        if self._model:
+            y_hat = self._model.predict(features)
+        
         return y_hat
