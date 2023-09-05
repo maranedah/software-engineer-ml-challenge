@@ -94,4 +94,4 @@ class DelayModel:
         if self._model:
             y_hat = self._model.predict(features)
         
-        return y_hat
+        return y_hat.tolist()

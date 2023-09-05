@@ -1,6 +1,7 @@
 import fastapi
 import joblib
 import pandas as pd
+from .preprocess import get_top_10_features
 
 app = fastapi.FastAPI()
 
@@ -19,7 +20,6 @@ def transform_column_to_dummy(df):
 
 @app.post("/predict", status_code=200)
 async def post_predict(data: dict) -> dict:
-    breakpoint()
     columns = transform_column_to_dummy(data)
     # initialize pd frame
     df = pd.DataFrame(0, index=range(1), columns=model._schema)
@@ -27,7 +27,9 @@ async def post_predict(data: dict) -> dict:
         if column in df.columns:
             df[column] = 1
         else:
-            raise Exception("Attempted to assign column not present in data schema")
+            raise fastapi.HTTPException(status_code=400, detail="Attempted to assign column not present in data schema")
+    df = get_top_10_features(df)
     prediction = model.predict(df)
-
-    return
+    breakpoint()
+    response = {"predict": prediction}
+    return response
