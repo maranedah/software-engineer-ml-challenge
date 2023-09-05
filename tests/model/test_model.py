@@ -90,12 +90,20 @@ class TestModel(unittest.TestCase):
     def test_model_predict(
         self
     ):
-        features = self.model.preprocess(
-            data=self.data
+        features, target = self.model.preprocess(
+            data=self.data,
+            target_column="delay"
+        )
+        
+        self.model.fit(
+            features=features,
+            target=target
         )
 
+        _, features_validation, _, target_validation = train_test_split(features, target, test_size = 0.33, random_state = 42)
+
         predicted_targets = self.model.predict(
-            features=features
+            features=features_validation
         )
 
         assert isinstance(predicted_targets, list)

@@ -1,4 +1,7 @@
 reports/*
+features.csv
+full_features.csv
+model.joblib
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
