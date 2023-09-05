@@ -30,6 +30,5 @@ async def post_predict(data: dict) -> dict:
             raise fastapi.HTTPException(status_code=400, detail="Attempted to assign column not present in data schema")
     df = get_top_10_features(df)
     prediction = model.predict(df)
-    breakpoint()
     response = {"predict": prediction}
     return response
