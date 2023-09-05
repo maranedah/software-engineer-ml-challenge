@@ -1,7 +1,33 @@
 name: 'Continuous Delivery'
 
 on:
-  ...
+  push:
+    branches:
+      - main  
+      - dev
 
 jobs:
-  ...
+  build:
+    runs-on: ubuntu-latest  # Use the latest available Ubuntu runner
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2  # Checkout the repository code
+
+    - name: Set up Python
+      uses: actions/setup-python@v2  # Set up Python environment
+      with:
+        python-version: 3.10  # Choose your desired Python version
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt 
+        pip install -r requirements-test.txt 
+        pip install -r requirements-dev.txt
+
+    - name: Run model tests
+      run: make model-test # Run your tests using pytest
+
+    - name: Run api tests
+      run: make api-test
+
