@@ -71,9 +71,9 @@ class DelayModel:
         """
         n_y0 = len(target[target == 0])
         n_y1 = len(target[target == 1])
-        scale = n_y0/n_y1
-        model= xgb.XGBClassifier(random_state=1, learning_rate=0.01, scale_pos_weight = scale)
-        #model = LogisticRegression(class_weight={1: n_y0/len(target), 0: n_y1/len(target)})
+        #scale = n_y0/n_y1
+        #model= xgb.XGBClassifier(random_state=1, learning_rate=0.01, scale_pos_weight = scale)
+        model = LogisticRegression(class_weight={1: n_y0/len(target), 0: n_y1/len(target)})
         model.fit(features, target)
         self._model = model
         joblib.dump(self, 'model.joblib')

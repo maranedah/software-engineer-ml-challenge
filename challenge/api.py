@@ -6,7 +6,7 @@ from .preprocess import get_top_10_features
 app = fastapi.FastAPI()
 
 # Load the pre-trained XGBoost model
-model = joblib.load("model.joblib")
+#model = joblib.load("model.joblib")
 
 @app.get("/health", status_code=200)
 async def get_health() -> dict:
