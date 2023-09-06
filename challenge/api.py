@@ -3,10 +3,10 @@ import joblib
 import pandas as pd
 from .preprocess import get_top_10_features
 
-app = fastapi.FastAPI()
+app = fastapi.FastAPI(port=80)
 
 # Load the pre-trained XGBoost model
-#model = joblib.load("model.joblib")
+model = joblib.load("model.joblib")
 
 @app.get("/health", status_code=200)
 async def get_health() -> dict:
