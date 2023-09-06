@@ -1,0 +1,34 @@
+name: 'Continuous Integration'
+
+on:
+  push:
+    branches:
+      - main  
+      - dev
+      - feature/*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2  
+
+    - name: Set up Python
+      uses: actions/setup-python@v2 
+      with:
+        python-version: "3.10"  
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt 
+        pip install -r requirements-test.txt 
+        pip install -r requirements-dev.txt
+
+    - name: Run model tests
+      run: make model-test # Run your tests using pytest
+
+    - name: Run api tests
+      run: make api-test
+
